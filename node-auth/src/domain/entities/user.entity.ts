@@ -7,5 +7,4 @@ export class UserEntity {
     public readonly role: string[],
     public readonly img?: string
   ) {}
-
 }
