@@ -1,3 +1,4 @@
+import { BcryptAdapter } from "../../config";
 import { UserModel } from "../../data/mongodb";
 import {
   AuthDataSource,
@@ -6,7 +7,15 @@ import {
   UserEntity,
 } from "../../domain";
 
+type HashFunction = (password: string) => string;
+type CompareFunction = (password: string, hashed: string) => boolean;
+
 export class AuthDataSourceImpl implements AuthDataSource {
+  constructor(
+    private readonly hashFunction: HashFunction = BcryptAdapter.hash,
+    private readonly comparePassword: CompareFunction = BcryptAdapter.compare
+  ) {}
+
   login(email: string, password: string): Promise<any> {
     throw new Error("Method not implemented.");
   }
@@ -20,16 +29,18 @@ export class AuthDataSourceImpl implements AuthDataSource {
 
       if (exist) throw CustomError.badRequest(`Email ${email} already exists`);
 
+      //2. Hacer el hash de la contraseña
       const user = await UserModel.create({
         name,
         email,
-        password,
+        password: this.hashFunction(password),
       });
-      //2. Hacer el hash de la contraseña
+
       await user.save();
+
       //3. Mapear la respuesta a nuestra entidad
 
-      return new UserEntity(user.id, name, email, password, user.roles);
+      return new UserEntity(user.id, name, email, user.password, user.roles);
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
