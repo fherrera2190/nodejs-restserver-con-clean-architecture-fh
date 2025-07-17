@@ -3,6 +3,7 @@ import { UserModel } from "../../data/mongodb";
 import {
   AuthDataSource,
   CustomError,
+  LoginUserDto,
   RegisterUserDto,
   UserEntity,
 } from "../../domain";
@@ -17,9 +18,25 @@ export class AuthDataSourceImpl implements AuthDataSource {
     private readonly comparePassword: CompareFunction = BcryptAdapter.compare
   ) {}
 
-  login(email: string, password: string): Promise<any> {
-    throw new Error("Method not implemented.");
+  async login(loginUserDto: LoginUserDto): Promise<UserEntity> {
+    const { email, password } = loginUserDto;
+    try {
+      const user = await UserModel.findOne({ email });
+
+      if (!user) throw CustomError.badRequest(`Could find user`);
+
+      const isMatching = this.comparePassword(password, user.password);
+
+      if (!isMatching) throw CustomError.badRequest("Credentials no valid");
+      return UserMapper.userEntityFromOBject(user);
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw CustomError.internalError();
+    }
   }
+
   async register(registerUserDto: RegisterUserDto): Promise<UserEntity> {
     const { name, email, password } = registerUserDto;
 

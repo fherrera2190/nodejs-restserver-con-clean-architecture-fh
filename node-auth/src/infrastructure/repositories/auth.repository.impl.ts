@@ -1,6 +1,7 @@
 import {
   AuthDataSource,
   AuthRepository,
+  LoginUserDto,
   RegisterUserDto,
   UserEntity,
 } from "../../domain";
@@ -8,8 +9,8 @@ import {
 export class AuthRepositoryImpl implements AuthRepository {
   constructor(private readonly authDataSource: AuthDataSource) {}
 
-  login(email: string, password: string): Promise<any> {
-    throw new Error("Method not implemented.");
+  login(loginUserDto: LoginUserDto): Promise<UserEntity> {
+    return this.authDataSource.login(loginUserDto);
   }
   register(registerUserDto: RegisterUserDto): Promise<UserEntity> {
     return this.authDataSource.register(registerUserDto);
