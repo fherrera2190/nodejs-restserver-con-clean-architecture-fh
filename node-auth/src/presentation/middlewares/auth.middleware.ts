@@ -19,7 +19,6 @@ export class AuthMiddleware {
       return res.status(401).json({ error: "Invalid Bearer Token" });
 
     const token = authorization.split(" ").at(1) || "";
-    console.log(token);
     try {
       const payload = await JwtAdapter.validateToken<{ id: string }>(token);
 
@@ -31,8 +30,9 @@ export class AuthMiddleware {
         return res
           .status(401)
           .json({ error: "Invalid token - User not found" });
-
-      req.body.user = user;
+      //console.log(req);
+      console.log(user);
+      req.body = { user };
 
       next();
     } catch (error) {
